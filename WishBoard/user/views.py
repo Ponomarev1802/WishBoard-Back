@@ -1,7 +1,6 @@
 from aiohttp import web
 from .models import User, Wish
 import aiohttp_jinja2
-from helpers.decorators import login_required
 import json
 from playhouse.shortcuts import model_to_dict
 
