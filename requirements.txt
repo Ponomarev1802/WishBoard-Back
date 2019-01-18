@@ -1,0 +1,16 @@
+gunicorn==19.7.1
+pep8==1.7.0
+coverage==4.3.4
+coverage-badge==0.2.0
+pylama==7.3.3
+aiohttp
+aiohttp-debugtoolbar==0.3.0
+aiohttp-jinja2==0.13.0
+aiohttp-session
+aioredis==0.3.0
+async-timeout==1.2.0
+Jinja2==2.9.6
+peewee-async
+aiopg==0.13.0
+nose==1.3.7
+rednose==1.2.2
