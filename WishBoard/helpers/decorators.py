@@ -14,8 +14,7 @@ def login_required(func):
     """ Allow only auth users """
     async def wrapped(self, *args, **kwargs):
         if self.request.user is None:
-            print('неавторизованный пользователь')
-            return web.json_response({})
+            return {}
         return await func(self, *args, **kwargs)
     return wrapped
 

@@ -12,8 +12,8 @@ class User(BaseModel):
     birth_date = DateField()
 
     def serialize(self):
-        return {"first_name": self.first_name,
-                "last_name": self.last_name,
+        return {"name": self.first_name,
+                "surename": self.last_name,
                 "photo": self.photo,
                 "birth_date": str(self.birth_date),
                 }
@@ -28,7 +28,8 @@ class Wish(BaseModel):
     balance = IntegerField()
 
     def serialize(self):
-        return {"title": self.title,
+        return {"id": self.id,
+                "title": self.title,
                 "description": self.description,
                 "image": self.image,
                 "href": self.href,

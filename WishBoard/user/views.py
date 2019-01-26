@@ -1,6 +1,7 @@
 from aiohttp import web
 from .models import User, Wish
 import aiohttp_jinja2
+from helpers.tools import redirect
 import json
 from playhouse.shortcuts import model_to_dict
 
@@ -18,7 +19,7 @@ class getUser(web.View):
                 wishes.append(wish.serialize())
         except:
             pass
-        return web.json_response({"user": user.serialize(), "wishes": wishes})
+        return {"user": user.serialize(), "wishes": wishes}
 
 class addWish(web.View):
     async def post(self):
@@ -48,11 +49,11 @@ class loginUser(web.View):
         return{}
 
     async def post(self):
-        data = await self.request.post()
+        data = await self.request.json()
         try:
-            user = await self.request.app.objects.get(User, email=data['email'], password=data['password'])
+            user = await self.request.app.objects.get(User, **data)
         except:
             return web.json_response({})
         if user:
             self.request.session['user'] = str(user.id)
-        return web.Response(text='its alive')
+        return redirect(self.request, 'getUser')
