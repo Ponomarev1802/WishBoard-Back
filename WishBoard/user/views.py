@@ -1,8 +1,6 @@
 from aiohttp import web
 from .models import User, Wish
-import aiohttp_jinja2
-import json
-from playhouse.shortcuts import model_to_dict
+from helpers.tools import redirect
 
 from helpers.decorators import anonymous_required, login_required
 
@@ -18,7 +16,9 @@ class getUser(web.View):
                 wishes.append(wish.serialize())
         except:
             pass
-        return web.json_response({"user": user.serialize(), "wishes": wishes})
+        #print(wishes)
+        return {"user": user.serialize(), "wishes": wishes, "status": {"req": True}}
+
 
 class addWish(web.View):
     async def post(self):
@@ -29,30 +29,36 @@ class addWish(web.View):
             return web.json_response({})
         return web.json_response(data.serialize())
 
-class newUser(web.View):
-    @aiohttp_jinja2.template('accounts/register.html')
-    async def get(self):
-        return{}
-
+class delWish (web.View):
     async def post(self):
-        data = await self.request.post()
-        user = await self.request.app.objects.create(User, **data)
-        return web.json_response(user.serialize())
+        wish = await self.request.json()
+        try:
+            wish = await self.request.app.objects.delete(Wish, **wish, user=self.request.user)
+            print(wish)
+        except:
+            print('not deleted')
+
+class newUser(web.View):
+    async def post(self):
+        data = await self.request.json()
+        #print(data)
+        try:
+            user = await self.request.app.objects.create(User, **data)
+            return {"status": {"req": True}}
+        except:
+            return {"status": {"req": False}}
 
 
 
 class loginUser(web.View):
-
-    @aiohttp_jinja2.template('accounts/login.html')
-    async def get(self):
-        return{}
-
     async def post(self):
-        data = await self.request.post()
+        data = await self.request.json()
+        #print (data)
         try:
-            user = await self.request.app.objects.get(User, email=data['email'], password=data['password'])
+            user = await self.request.app.objects.get(User, **data)
         except:
-            return web.json_response({})
+            return {"status": {"req": False}}
         if user:
             self.request.session['user'] = str(user.id)
-        return web.Response(text='its alive')
+            redirect(self.request, 'getUser')
+        return {"status": {"req": False}}
