@@ -18,6 +18,7 @@ async def request_user_middleware(app, handler):
                 pass
         response = await handler(request)
         response['status'].update({"auth": auth})
+        print(response)
         return response
     return middleware
 

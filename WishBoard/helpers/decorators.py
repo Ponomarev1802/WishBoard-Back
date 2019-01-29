@@ -14,7 +14,7 @@ def login_required(func):
     """ Allow only auth users """
     async def wrapped(self, *args, **kwargs):
         if self.request.user is None:
-            return {}
+            return {"status": {"err": "forbidden"}}
         return await func(self, *args, **kwargs)
     return wrapped
 

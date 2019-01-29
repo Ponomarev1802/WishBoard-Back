@@ -2,7 +2,7 @@ from aiohttp import web
 from .models import User, Wish
 from helpers.tools import redirect
 
-from helpers.decorators import anonymous_required, login_required
+from helpers.decorators import login_required
 
 
 class getUser(web.View):
@@ -34,9 +34,9 @@ class delWish (web.View):
         wish = await self.request.json()
         try:
             wish = await self.request.app.objects.delete(Wish, **wish, user=self.request.user)
-            print(wish)
+            return{"status": {"req": True}}
         except:
-            print('not deleted')
+            return {"status": {"req": False}}
 
 class newUser(web.View):
     async def post(self):
