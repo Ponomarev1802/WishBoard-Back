@@ -32,10 +32,12 @@ class addWish(web.View):
 class delWish (web.View):
     async def post(self):
         wish = self.request.data
+        #print(wish)
         try:
-            wish = await self.request.app.objects.delete(Wish, **wish, user=self.request.user)
+            query = Wish.delete().where(Wish.id == wish['id'], Wish.user_id == self.request.user.id)
+            wish = await self.request.app.objects.execute(query)
         except:
-            self.request.status.update({"req": False})
+            self.request.status.update({"err": "cant delete"})
         return {}
 
 class newUser(web.View):
