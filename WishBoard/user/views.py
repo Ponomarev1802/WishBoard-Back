@@ -22,43 +22,44 @@ class getUser(web.View):
 
 class addWish(web.View):
     async def post(self):
-        wish = await self.request.json()
+        wish = self.request.data
         try:
             data = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
         except:
-            return web.json_response({})
-        return web.json_response(data.serialize())
+            self.request.update({"err": "не удалось записать Wish в базу"})
+        return {}
 
 class delWish (web.View):
     async def post(self):
-        wish = await self.request.json()
+        wish = self.request.data
         try:
             wish = await self.request.app.objects.delete(Wish, **wish, user=self.request.user)
-            return{"status": {"req": True}}
         except:
-            return {"status": {"req": False}}
+            self.request.status.update({"req": False})
+        return {}
 
 class newUser(web.View):
     async def post(self):
-        data = await self.request.json()
+        data = self.request.data
         #print(data)
         try:
             user = await self.request.app.objects.create(User, **data)
-            return {"status": {"req": True}}
         except:
-            return {"status": {"req": False}}
+            self.request.status.update({"req": False})
+        return {}
 
 
 
 class loginUser(web.View):
     async def post(self):
-        data = await self.request.json()
+        data = self.request.data
         #print (data)
         try:
             user = await self.request.app.objects.get(User, **data)
         except:
-            return {"status": {"req": False}}
+            self.request.status.update({"req": False})
         if user:
             self.request.session['user'] = str(user.id)
             redirect(self.request, 'getUser')
-        return {"status": {"req": False}}
+        self.request.status.update({"req": False})
+        return {}

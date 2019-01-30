@@ -11,19 +11,19 @@ def json_response(func):
 
 
 def login_required(func):
-    """ Allow only auth users """
+    """ Отказ в доступе для неавторизованных пользователей """
     async def wrapped(self, *args, **kwargs):
         if self.request.user is None:
-            return {"status": {"err": "forbidden"}}
+            self.request.status.update({"err": "forbidden"})
+            return {}
         return await func(self, *args, **kwargs)
     return wrapped
 
 
 def anonymous_required(func):
-    """ Allow only anonymous users """
+    """ Отказ в доступе для авторизованных пользователей """
     async def wrapped(self, *args, **kwargs):
         if self.request.user is not None:
-            add_message(self.request, 'info', '<a href="/logout" class="alert-link">LogOut</a> to continue.')
-            redirect(self.request, 'index')
+            return {"status": {"err": "you're already logged in"}}
         return await func(self, *args, **kwargs)
     return wrapped
