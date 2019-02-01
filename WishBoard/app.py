@@ -13,7 +13,7 @@ import settings
 from routes import setup_routes
 
 from settings import logger
-from helpers.middlewares import request_user_middleware, return_json_resp
+from helpers.middlewares import request_user_middleware,json_response, request_checker,status_initial
 from helpers.template_tags import tags
 from helpers.models import database
 
@@ -21,10 +21,7 @@ from helpers.models import database
 async def create_app(loop):
     """ Prepare application """
     redis_pool = await aioredis.create_pool(settings.REDIS_CON, loop=loop)
-    middlewares = [session_middleware(RedisStorage(redis_pool)),
-                   return_json_resp,
-                   request_user_middleware,
-                   ]
+    middlewares = [session_middleware(RedisStorage(redis_pool)), json_response, status_initial, request_checker, request_user_middleware]
     # init application
     app = web.Application(loop=loop, middlewares=middlewares)
     app.redis_pool = redis_pool
@@ -72,7 +69,7 @@ if __name__ == '__main__':
     serv_generator, handler, app = loop.run_until_complete(create_app(loop))
     server = loop.run_until_complete(serv_generator)
 
-    logger.debug(f'Start server {server.sockets[0].getsockname()}')
+    logger.debug('Start server '+str(server.sockets[0].getsockname()))
     try:
         loop.run_forever()
     except KeyboardInterrupt:

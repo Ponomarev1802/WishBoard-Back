@@ -4,16 +4,16 @@ import json
 
 
 class User(BaseModel):
-    first_name = CharField(max_length=30)
-    last_name = CharField(max_length=30)
-    email = CharField(max_length=50)
+    name = CharField(max_length=30)
+    surename = CharField(max_length=30, null=True)
+    email = CharField(max_length=50, unique=True)
     password = CharField()
-    photo = CharField()
-    birth_date = DateField()
+    photo = CharField(null=True)
+    birth_date = DateField(null=True)
 
     def serialize(self):
-        return {"name": self.first_name,
-                "surename": self.last_name,
+        return {"name": self.name,
+                "surename": self.surename,
                 "photo": self.photo,
                 "birth_date": str(self.birth_date),
                 }

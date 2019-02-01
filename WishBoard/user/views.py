@@ -1,11 +1,8 @@
 from aiohttp import web
 from .models import User, Wish
-import aiohttp_jinja2
 from helpers.tools import redirect
-import json
-from playhouse.shortcuts import model_to_dict
 
-from helpers.decorators import anonymous_required, login_required
+from helpers.decorators import login_required
 
 
 class getUser(web.View):
@@ -19,41 +16,52 @@ class getUser(web.View):
                 wishes.append(wish.serialize())
         except:
             pass
-        return {"user": user.serialize(), "wishes": wishes}
+        #print(wishes)
+        return {"user": user.serialize(), "wishes": wishes, "status": {"req": True}}
+
 
 class addWish(web.View):
     async def post(self):
-        wish = await self.request.json()
+        wish = self.request.data
         try:
             data = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
         except:
-            return web.json_response({})
-        return web.json_response(data.serialize())
+            self.request.update({"err": "не удалось записать Wish в базу"})
+        return {}
+
+class delWish (web.View):
+    async def post(self):
+        wish = self.request.data
+        #print(wish)
+        try:
+            query = Wish.delete().where(Wish.id == wish['id'], Wish.user_id == self.request.user.id)
+            wish = await self.request.app.objects.execute(query)
+        except:
+            self.request.status.update({"err": "cant delete"})
+        return {}
 
 class newUser(web.View):
-    @aiohttp_jinja2.template('accounts/register.html')
-    async def get(self):
-        return{}
-
     async def post(self):
-        data = await self.request.post()
-        user = await self.request.app.objects.create(User, **data)
-        return web.json_response(user.serialize())
+        data = self.request.data
+        #print(data)
+        try:
+            user = await self.request.app.objects.create(User, **data)
+        except:
+            self.request.status.update({"req": False})
+        return {}
 
 
 
 class loginUser(web.View):
-
-    @aiohttp_jinja2.template('accounts/login.html')
-    async def get(self):
-        return{}
-
     async def post(self):
-        data = await self.request.json()
+        data = self.request.data
+        #print (data)
         try:
             user = await self.request.app.objects.get(User, **data)
         except:
-            return web.json_response({})
+            self.request.status.update({"req": False})
         if user:
             self.request.session['user'] = str(user.id)
-        return redirect(self.request, 'getUser')
+            redirect(self.request, 'getUser')
+        self.request.status.update({"req": False})
+        return {}
