@@ -17,21 +17,3 @@ class User(BaseModel):
                 "photo": self.photo,
                 "birth_date": str(self.birth_date),
                 }
-
-class Wish(BaseModel):
-    user = ForeignKeyField(User, on_delete='CASCADE', related_name='wishes')
-    title = CharField(max_length=50)
-    description = TextField()
-    image = CharField()
-    href = CharField(max_length=250)
-    cost = IntegerField()
-    balance = IntegerField()
-
-    def serialize(self):
-        return {"id": self.id,
-                "title": self.title,
-                "description": self.description,
-                "image": self.image,
-                "href": self.href,
-                "cost": self.cost
-                }

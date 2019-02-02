@@ -28,7 +28,7 @@ async def json_response(app, handler):
     async def middleware(request):
         #print('enter in middleware 2')
         res = await handler(request)
-        print(res)
+        #print(res)
         return web.json_response(res)
     return middleware
 

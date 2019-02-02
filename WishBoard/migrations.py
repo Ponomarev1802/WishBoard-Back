@@ -1,6 +1,7 @@
 # Not real migrations, just create tables
 
-from user.models import User, Wish
+from user.models import User
+from wish.models import Wish
 
 from aiohttp import web
 

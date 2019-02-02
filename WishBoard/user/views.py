@@ -1,53 +1,31 @@
 from aiohttp import web
-from .models import User, Wish
+from .models import User
 from helpers.tools import redirect
 
 from helpers.decorators import login_required
 
 
-class getUser(web.View):
+class GetUser(web.View):
     @login_required
     async def get(self):
         user = self.request.user
-        wishes = []
-        try:
-            query = await self.request.app.objects.execute(user.wishes)
-            for wish in query:
-                wishes.append(wish.serialize())
-        except:
-            pass
-        #print(wishes)
-        return {"user": user.serialize(), "wishes": wishes, "status": {"req": True}}
+        id = self.request.GET.get('id', user.id)
+        if id == user.id:
+            return {"user": user.serialize()}
+        else:
+            return {}
 
 
-class addWish(web.View):
-    async def post(self):
-        wish = self.request.data
-        try:
-            data = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
-        except:
-            self.request.update({"err": "не удалось записать Wish в базу"})
-        return {}
 
-class delWish (web.View):
-    async def post(self):
-        wish = self.request.data
-        #print(wish)
-        try:
-            query = Wish.delete().where(Wish.id == wish['id'], Wish.user_id == self.request.user.id)
-            wish = await self.request.app.objects.execute(query)
-        except:
-            self.request.status.update({"err": "cant delete"})
-        return {}
 
-class newUser(web.View):
+class AddUser(web.View):
     async def post(self):
         data = self.request.data
         #print(data)
         try:
             user = await self.request.app.objects.create(User, **data)
         except:
-            self.request.status.update({"req": False})
+            self.request.status.update({"err": "регистрация не удалась"})
         return {}
 
 
@@ -55,6 +33,7 @@ class newUser(web.View):
 class loginUser(web.View):
     async def post(self):
         data = self.request.data
+        user = False
         #print (data)
         try:
             user = await self.request.app.objects.get(User, **data)
@@ -62,6 +41,6 @@ class loginUser(web.View):
             self.request.status.update({"req": False})
         if user:
             self.request.session['user'] = str(user.id)
-            redirect(self.request, 'getUser')
-        self.request.status.update({"req": False})
+            redirect(self.request, 'GetUser')
+        self.request.status.update({"err": "Логин и пароль не совпадают"})
         return {}
