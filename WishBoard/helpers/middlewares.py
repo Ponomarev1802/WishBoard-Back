@@ -13,7 +13,7 @@ async def request_user_middleware(app, handler):
         auth = False
         if user_id is not None:
             try:
-                request.user = await request.app.objects.get(User, id=user_id)
+                request.user = await request.app.objects.get(User.getAll(user_id))
                 auth = True
             except:
                 pass

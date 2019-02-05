@@ -13,13 +13,13 @@ class Wish(BaseModel):
     link = CharField(max_length=250)
     cost = IntegerField()
     balance = IntegerField()
-    donator = ForeignKeyField(User, on_delete='SET NULL', related_name='wishes')
+    donator = ForeignKeyField(User, on_delete='SET NULL', related_name='donate_wishes')
     creationdate = DateField(default=datetime.datetime.today())
     expiry = DateField(default=None)
     category = CharField(max_length=50)
     status = CharField(max_length=3)
     isHidden = BooleanField()
-    from_user = ForeignKeyField(User, on_delete='CASCADE', related_name='wishes')
+    from_user = ForeignKeyField(User, on_delete='CASCADE', related_name='in_wishes')
 
     def serialize(self):
         return {"id": self.id,
@@ -36,11 +36,9 @@ class Comments(BaseModel):
     wish = ForeignKeyField(Wish, on_delete='cascade', related_name='comments')
     time = DateTimeField(default=datetime.datetime.now)
     text = TextField()
+    #response = ForeignKeyField(Comments, on_delete='cascade', related_name='response')
 
 
-Comments.response = ForeignKeyField(Comments, on_delete='cascade', related_name='response')
-
-
-class ExcludeHidden:
+class ExcludeHidden(BaseModel):
     wish = ForeignKeyField(Wish, on_delete='cascade')
     user = ForeignKeyField(User, on_delete='cascade')

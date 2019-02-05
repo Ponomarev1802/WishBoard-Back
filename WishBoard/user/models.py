@@ -1,4 +1,4 @@
-from peewee import CharField, DateField, IntegerField, ForeignKeyField, TextField
+from peewee import CharField, DateField, IntegerField, ForeignKeyField, TextField,fn, JOIN
 from helpers.models import BaseModel
 import json
 
@@ -18,10 +18,51 @@ class User(BaseModel):
                 "surename": self.surename,
                 "photo": self.photo,
                 "birth_date": str(self.birth_date),
+                "followers": self.flwrs if hasattr(self, 'flwrs') else 0,
+                "follows": self.flws if hasattr(self, 'flws') else 0,
                 }
 
+    @classmethod
+    def getAll(cls, id):
+        return User.select(User, fn.COUNT(Followers.toward).alias('flws'),
+                           fn.COUNT(Followers.whom).alias('flwrs'))\
+            .join(Followers, JOIN.INNER)\
+            .group_by(User)
+
+
 class Followers(BaseModel):
-    toward = ForeignKeyField(User, on_delete="CASCADE")
-    whom = ForeignKeyField(User, on_delete="CASCADE")
+    toward = ForeignKeyField(User, on_delete="CASCADE", related_name="followers")
+    whom = ForeignKeyField(User, on_delete="CASCADE", related_name="follows")
 
 
+"""
+Запрос на получение пользователя с количеством его подписок и подсписчиков
+SELECT *, (SELECT COUNT(*) FROM followers WHERE followers.toward_id=11) AS FOLLOWERS
+,(SELECT COUNT(*) FROM followers WHERE followers.whom_id=11) AS FOLLOWERS
+FROM "user"
+
+
+
+
+SELECT a.id, COUNT(r.toward_id) as followers, count (s.whom_id) as follows
+FROM "user" a
+JOIN followers r
+ON a.id = r.toward_id
+JOIN followers s
+ON a.id = s.whom_id
+   WHERE a.id = 11
+GROUP BY a.id
+
+"""
+
+"""
+Запрос на получение пользователя с количеством его подписок и подсписчиков
+SELECT a.id, COUNT(r.toward_id) as followers, count (s.whom_id) as follows
+            FROM "user" a
+            JOIN followers r
+              ON a.id = r.toward_id
+            JOIN followers s
+              ON a.id = s.whom_id
+            WHERE a.id = 11
+            GROUP BY a.id
+"""

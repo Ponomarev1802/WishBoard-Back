@@ -6,7 +6,7 @@ import migrations
 def setup_routes(app):
     app.router.add_get('/user', user.GetUser, name='GetUser')
     app.router.add_post('/user', user.AddUser)
-    app.router.add_post('/login', user.loginUser)
+    app.router.add_post('/login', user.LoginUser)
 
     app.router.add_post('/wish', wish.AddWish)
     app.router.add_post('/wish/{id}', wish.EditWish)
