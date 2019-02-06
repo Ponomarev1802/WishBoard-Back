@@ -11,8 +11,7 @@ class GetUser(web.View):
     async def get(self):
         user = self.request.user
         id = self.request.rel_url.query.get('id', user.id)
-        print(id)
-        if id==user.id:
+        if id == user.id:
             return {"user": user.serialize()}
         else:
             return {}
@@ -45,7 +44,7 @@ class LoginUser(web.View):
         return {}
 
 
-class Subscribe(web.View):
+class AddFollow (web.View):
     async def post(self):
         toward = self.request.data.toward
         user = self.request.user
@@ -54,3 +53,59 @@ class Subscribe(web.View):
         except:
             self.request.status.update({"err": "Не удалось подписаться"})
         return {}
+
+class GetFollowers(web.View):
+    async def get(self):
+        user = self.request.user
+        followers = []
+        id = self.request.rel_url.query.get('id', user.id)
+        if id == user.id:
+            try:
+                query = User.select(User).join(Followers, on=(Followers.whom == User.id)).where(
+                    Followers.toward == id)
+                result = await self.request.app.objects.execute(query)
+                for flwr in result:
+                    followers.append(flwr.serialize())
+                return {"followers": followers}
+            except:
+                self.request.status.update({"err": "Не удалось получить подписчиков"})
+                return {}
+        else:
+            try:
+                query = User.select(User).join(Followers, on=(Followers.whom == User.id)).where(
+                    Followers.toward == id)
+                result = await self.request.app.objects.execute(query)
+                for flwr in result:
+                    followers.append(flwr.serialize())
+                return {"followers": followers}
+            except:
+                self.request.status.update({"err": "Не удалось получить подписчиков"})
+                return {}
+
+class GetFollows(web.View):
+    async def get(self):
+        user = self.request.user
+        followers = []
+        id = self.request.rel_url.query.get('id', user.id)
+        if id == user.id:
+            try:
+                query = User.select(User).join(Followers, on=(Followers.toward == User.id)).where(
+                    Followers.whom == id)
+                result = await self.request.app.objects.execute(query)
+                for flwr in result:
+                    followers.append(flwr.serialize())
+                return {"followers": followers}
+            except:
+                self.request.status.update({"err": "Не удалось получить подписчиков"})
+                return {}
+        else:
+            try:
+                query = User.select(User).join(Followers, on=(Followers.toward == User.id)).where(
+                    Followers.whom == id)
+                result = await self.request.app.objects.execute(query)
+                for flwr in result:
+                    followers.append(flwr.serialize())
+                return {"followers": followers}
+            except:
+                self.request.status.update({"err": "Не удалось получить подписчиков"})
+                return {}
