@@ -8,6 +8,8 @@ def setup_routes(app):
     app.router.add_post('/user', user.AddUser)
     app.router.add_post('/login', user.LoginUser)
     app.router.add_get('/followers', user.GetFollowers)
+    app.router.add_get('/follows', user.GetFollows)
+    app.router.add_post('/follows/{id}', user.EditFollow)
 
     app.router.add_post('/wish', wish.AddWish)
     app.router.add_post('/wish/{id}', wish.EditWish)

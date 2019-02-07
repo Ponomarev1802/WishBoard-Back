@@ -54,6 +54,16 @@ class AddFollow (web.View):
             self.request.status.update({"err": "Не удалось подписаться"})
         return {}
 
+class EditFollow(web.View):
+    async def post(self):
+        user = self.request.user
+        data = self.request.data
+        id = self.request.match_info['id']
+        if not data:
+            query = Followers.delete().where(Followers.whom==user.id, Followers.toward==id)
+            await self.request.app.objects.execute(query)
+            return {}
+
 class GetFollowers(web.View):
     async def get(self):
         user = self.request.user
