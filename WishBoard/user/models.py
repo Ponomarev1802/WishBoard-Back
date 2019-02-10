@@ -1,4 +1,4 @@
-from peewee import CharField, DateField, IntegerField, ForeignKeyField, TextField,fn, JOIN
+from peewee import CharField, DateField, IntegerField, ForeignKeyField, TextField,fn, JOIN, SelectQuery
 from helpers.models import BaseModel
 import json
 
@@ -24,11 +24,16 @@ class User(BaseModel):
 
     @classmethod
     def getAll(cls, id):
-        return User.select(User, fn.COUNT(Followers.toward).alias('flws'),
-                           fn.COUNT(Followers.whom).alias('flwrs'))\
-            .join(Followers, JOIN.INNER)\
-            .group_by(User)
-
+        Followers1 = Followers.alias()
+        query = (User.select(User,
+                             fn.COUNT(fn.DISTINCT(Followers.id)).alias('flws'),
+                             fn.COUNT(fn.DISTINCT(Followers1.id)).alias('flwrs'))
+                 .join(Followers, on=Followers.whom==User.id)
+                 .join(Followers1, on=Followers1.toward==User.id)
+                 .where(User.id == id)
+                 .group_by(User.id)
+                 )
+        return query
 
 class Followers(BaseModel):
     toward = ForeignKeyField(User, on_delete="CASCADE", related_name="followers")

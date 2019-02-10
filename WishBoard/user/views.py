@@ -1,7 +1,6 @@
 from aiohttp import web
 from .models import User, Followers
 from helpers.tools import redirect
-from peewee import fn, JOIN
 
 from helpers.decorators import login_required
 

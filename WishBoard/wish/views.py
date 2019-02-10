@@ -30,7 +30,7 @@ class EditWish (web.View):
 class GetWish(web.View):
     async def get(self):
         user = self.request.user
-        id = self.request.GET.get('user', user.id)
+        id = self.request.rel_url.query.get('user', user.id)
         wishes = []
         if id == user.id:
             try:
