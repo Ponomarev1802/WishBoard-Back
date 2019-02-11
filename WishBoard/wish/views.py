@@ -47,3 +47,9 @@ class GetWish(web.View):
             except:
                 pass
         return {"wishes": wishes}
+
+class GetWishFull(web.View):
+    async def get(self):
+        user = self.request.user
+        id = self.request.match_info['id']
+        return {}

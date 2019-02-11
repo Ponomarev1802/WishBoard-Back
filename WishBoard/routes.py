@@ -13,6 +13,7 @@ def setup_routes(app):
 
     app.router.add_post('/wish', wish.AddWish)
     app.router.add_post('/wish/{id}', wish.EditWish)
+    app.router.add_get('/wish/{id}', wish.GetWishFull)
     app.router.add_get('/wish', wish.GetWish)
 
 
