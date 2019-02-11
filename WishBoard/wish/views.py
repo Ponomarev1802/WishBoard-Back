@@ -5,10 +5,14 @@ from .models import Wish
 class AddWish(web.View):
     async def post(self):
         wish = self.request.data
+        print(wish)
+        res = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
+        print(res)
         try:
-            await self.request.app.objects.create(Wish, **wish, user=self.request.user)
+            res = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
+            print(res)
         except:
-            self.request.update({"err": "не удалось записать Wish в базу"})
+            self.request.status.update({"err": "не удалось записать Wish в базу"})
         return {}
 
 
@@ -17,7 +21,10 @@ class EditWish (web.View):
         wish_id = self.request.match_info['id']
         wish = self.request.data
         if wish:
-            pass
+            try:
+                self.request.app.objects.update(Wish(wish_id), **wish)
+            except:
+                self.request.status.update({"err": "Не удалось обновить wish"})
         else:
             try:
                 query = Wish.delete().where(Wish.id == wish_id, Wish.user_id == self.request.user.id)

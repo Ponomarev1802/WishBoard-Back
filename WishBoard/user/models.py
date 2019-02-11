@@ -1,17 +1,19 @@
 from peewee import CharField, DateField, IntegerField, ForeignKeyField, TextField,fn, JOIN, SelectQuery
 from helpers.models import BaseModel
+import datetime
 import json
 
 
 class User(BaseModel):
     name = CharField(max_length=30)
     surename = CharField(max_length=30, null=True)
-    nickname = CharField(max_length=30)
-    email = CharField(max_length=50, unique=True)
+    nickname = CharField(max_length=30, unique=True, index=True)
+    email = CharField(max_length=50, unique=True, index=True)
     password = CharField()
     photo = CharField(null=True)
     birth_date = DateField(null=True)
-    session_key = CharField(max_length=100)
+    last_visit = DateField(default=datetime.datetime.today())
+    session_key = CharField(max_length=100, null=True)
 
     def serialize(self):
         return {"name": self.name,
@@ -28,8 +30,8 @@ class User(BaseModel):
         query = (User.select(User,
                              fn.COUNT(fn.DISTINCT(Followers.id)).alias('flws'),
                              fn.COUNT(fn.DISTINCT(Followers1.id)).alias('flwrs'))
-                 .join(Followers, on=Followers.whom==User.id)
-                 .join(Followers1, on=Followers1.toward==User.id)
+                 .join(Followers, JOIN.LEFT_OUTER, on=Followers.whom==User.id)
+                 .join(Followers1, JOIN.LEFT_OUTER, on=Followers1.toward==User.id)
                  .where(User.id == id)
                  .group_by(User.id)
                  )
@@ -38,6 +40,11 @@ class User(BaseModel):
 class Followers(BaseModel):
     toward = ForeignKeyField(User, on_delete="CASCADE", related_name="followers")
     whom = ForeignKeyField(User, on_delete="CASCADE", related_name="follows")
+    class Meta:
+        #unique = ("toward_id", "whom_id")
+        indexes = (
+            (("toward", "whom"), True),
+        )
 
 
 """
