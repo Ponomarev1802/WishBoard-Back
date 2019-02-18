@@ -18,6 +18,7 @@ class User(BaseModel):
     def serialize(self):
         return {"name": self.name,
                 "surename": self.surename,
+                "nickname": self.nickname,
                 "photo": self.photo,
                 "birth_date": str(self.birth_date),
                 "followers": self.flwrs if hasattr(self, 'flwrs') else 0,

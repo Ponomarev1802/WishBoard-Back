@@ -26,26 +26,23 @@ class Wish(BaseModel):
     from_user = ForeignKeyField(User, on_delete='CASCADE', related_name='out_wishes', null=True)
 
     def serialize(self):
+        #print(self.excludeHide)
         return {"id": self.id,
                 "title": self.title,
                 "description": self.description,
                 "image": self.image,
                 "link": self.link,
-                "cost": self.cost
+                "cost": self.cost,
+                "balance": self.balance,
+                "donator": self.donator,
+                "creationdate": str(self.creationdate),
+                "expiry": str(self.expiry),
+                "category": self.category,
+                "status": self.status,
+                "isHidden": self.isHidden,
+                "from_user": self.from_user,
                 }
-    @classmethod
-    def GetFull(cls, id):
-        query = (Wish.select(Wish,
-                             Comments.id.alias('Cid'), Comments.text.alias('Ctext'),
-                             Comments.user.alias('Cuser'), Comments.time.alias('Ctime'),
-                             fn.ARRAY_AGG(ExcludeHidden.user).alias('Exclude'))
-                 .join(Comments, JOIN.LEFT_OUTER, on=Comments.wish == Wish.id)
-                 .join(ExcludeHidden, JOIN.LEFT_OUTER, on=ExcludeHidden.wish == Wish.id)
-                 .where(Wish.id == id)
-                 .group_by(Wish.id, Comments.id)
-                 )
-        print(query)
-        return query
+
 
 
 class Comments(BaseModel):
@@ -56,6 +53,13 @@ class Comments(BaseModel):
     #response = ForeignKeyField(Comments, on_delete='cascade', related_name='response')
 
 
+    def serialize(self):
+        return {"user": self.user_id,
+                "time": str(self.time),
+                "text": self.text,
+                }
+
+
 class ExcludeHidden(BaseModel):
     wish = ForeignKeyField(Wish, on_delete='cascade', index=True, related_name="exclude")
     user = ForeignKeyField(User, on_delete='cascade')
@@ -64,3 +68,5 @@ class ExcludeHidden(BaseModel):
         indexes = (
             (("wish", "user"), True),
         )
+    def serialize(self):
+        return {"user": self.user_id}

@@ -13,8 +13,16 @@ class GetUser(web.View):
         if id == user.id:
             return {"user": user.serialize()}
         else:
-            return {}
+            try:
+                user = await self.request.app.objects.get(User.getAll(id))
+                return {"user": user.serialize()}
+            except:
+                return {"user": {}}
 
+class Logout(web.View):
+    async def post(self):
+        self.request.session.pop('user')
+        return {}
 
 class AddUser(web.View):
     async def post(self):
@@ -35,12 +43,13 @@ class LoginUser(web.View):
         try:
             user = await self.request.app.objects.get(User, **data)
         except:
-            self.request.status.update({"req": False})
+            self.request.status.update({"err": "Логин и пароль не совпадают"})
         if user:
             self.request.session['user'] = str(user.id)
             redirect(self.request, 'GetUser')
-        self.request.status.update({"err": "Логин и пароль не совпадают"})
-        return {}
+        else:
+            self.request.status.update({"err": "Логин и пароль не совпадают"})
+            return {}
 
 
 class AddFollow (web.View):
@@ -59,7 +68,7 @@ class EditFollow(web.View):
         data = self.request.data
         id = self.request.match_info['id']
         if not data:
-            query = Followers.delete().where(Followers.whom==user.id, Followers.toward==id)
+            query = Followers.delete().where(Followers.whom == user.id, Followers.toward == id)
             await self.request.app.objects.execute(query)
             return {}
 

@@ -5,9 +5,6 @@ from .models import Wish
 class AddWish(web.View):
     async def post(self):
         wish = self.request.data
-        print(wish)
-        res = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
-        print(res)
         try:
             res = await self.request.app.objects.create(Wish, **wish, user=self.request.user)
             print(res)
@@ -22,7 +19,8 @@ class EditWish (web.View):
         wish = self.request.data
         if wish:
             try:
-                self.request.app.objects.update(Wish(wish_id), **wish)
+                query = (Wish.update(**wish).where(Wish.id == wish_id))
+                await self.request.app.objects.execute(query)
             except:
                 self.request.status.update({"err": "Не удалось обновить wish"})
         else:
@@ -51,5 +49,24 @@ class GetWish(web.View):
 class GetWishFull(web.View):
     async def get(self):
         user = self.request.user
-        id = self.request.match_info['id']
-        return {}
+        wish_id = self.request.match_info['id']
+        wish_query = await self.request.app.objects.get(Wish(wish_id))
+        wish = wish_query
+        comments = []
+        excludes = []
+        try:
+            comments_query = await self.request.app.objects.execute(wish.comments)
+            for comment in comments_query:
+                comments.append(comment.serialize())
+        except:
+            pass
+        try:
+            excludes_query = await self.request.app.objects.execute(wish.exclude)
+            for exlude in excludes_query:
+                excludes.append(exlude.serialize())
+        except:
+            pass
+        wish = wish.serialize()
+        wish.update({'comments': comments})
+        wish.update({'excludes': excludes})
+        return wish
